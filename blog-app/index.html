@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="description" content="我的博客 - 随时随地访问">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="我的博客">
+    
+    <title>我的博客</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" href="icons/icon-192.png">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 60px 20px 80px;
+            text-align: center;
+            border-radius: 0 0 30px 30px;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        /* Search */
+        .search-container {
+            margin: -50px 20px 30px;
+        }
+        
+        .search-box {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            display: flex;
+            gap: 12px;
+        }
+        
+        .search-box input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            padding: 8px;
+        }
+        
+        .search-box button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .search-box button:active {
+            transform: scale(0.95);
+        }
+        
+        /* Categories */
+        .categories {
+            padding: 0 20px;
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .category {
+            padding: 10px 20px;
+            background: var(--card);
+            border-radius: 25px;
+            font-size: 14px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        
+        .category.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        /* Articles */
+        .articles {
+            padding: 0 20px;
+        }
+        
+        .article-card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .article-card:active {
+            transform: scale(0.98);
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .article-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        
+        .article-excerpt {
+            color: var(--text-light);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .article-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: var(--text-light);
+        }
+        
+        .article-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card);
+            padding: 12px 20px 30px;
+            display: flex;
+            justify-content: space-around;
+            box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.08);
+            z-index: 100;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-light);
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .nav-item.active {
+            color: var(--primary);
+        }
+        
+        .nav-icon {
+            font-size: 24px;
+        }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-light);
+        }
+        
+        /* WebView container */
+        .webview-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            z-index: 200;
+        }
+        
+        .webview-container.active {
+            display: block;
+        }
+        
+        .webview-header {
+            background: var(--primary);
+            color: white;
+            padding: 50px 20px 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .webview-title {
+            flex: 1;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .refresh-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        iframe {
+            width: 100%;
+            height: calc(100% - 80px);
+            border: none;
+        }
+        
+        /* Install Prompt */
+        .install-prompt {
+            position: fixed;
+            bottom: 80px;
+            left: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 16px 20px;
+            border-radius: 16px;
+            display: none;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+            z-index: 150;
+        }
+        
+        .install-prompt.show {
+            display: flex;
+        }
+        
+        .install-prompt-text {
+            flex: 1;
+        }
+        
+        .install-prompt-title {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .install-prompt-desc {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        .install-btn {
+            background: white;
+            color: var(--primary);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .close-prompt {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>📚 我的博客</h1>
+        <p>随时随地，记录生活</p>
+    </div>
+    
+    <!-- Search -->
+    <div class="search-container">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="搜索文章...">
+            <button onclick="search()">🔍 搜索</button>
+        </div>
+    </div>
+    
+    <!-- Categories -->
+    <div class="categories">
+        <div class="category active" onclick="filterCategory('all')">全部</div>
+        <div class="category" onclick="filterCategory('tech')">💻 技术</div>
+        <div class="category" onclick="filterCategory('life')">🌸 生活</div>
+        <div class="category" onclick="filterCategory('note')">📝 笔记</div>
+        <div class="category" onclick="filterCategory('other')">📌 其他</div>
+    </div>
+    
+    <!-- Articles -->
+    <div class="articles" id="articles">
+        <div class="loading">加载中...</div>
+    </div>
+    
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="showHome()">
+            <span class="nav-icon">🏠</span>
+            <span>首页</span>
+        </div>
+        <div class="nav-item" onclick="showCategories()">
+            <span class="nav-icon">📂</span>
+            <span>分类</span>
+        </div>
+        <div class="nav-item" onclick="showBookmarks()">
+            <span class="nav-icon">🔖</span>
+            <span>收藏</span>
+        </div>
+        <div class="nav-item" onclick="showSettings()">
+            <span class="nav-icon">⚙️</span>
+            <span>设置</span>
+        </div>
+    </div>
+    
+    <!-- Install Prompt -->
+    <div class="install-prompt" id="installPrompt">
+        <div class="install-prompt-text">
+            <div class="install-prompt-title">📱 安装 App</div>
+            <div class="install-prompt-desc">添加到主屏幕，随时访问</div>
+        </div>
+        <button class="install-btn" onclick="installPWA()">安装</button>
+        <button class="close-prompt" onclick="closeInstallPrompt()">×</button>
+    </div>
+    
+    <!-- WebView -->
+    <div class="webview-container" id="webviewContainer">
+        <div class="webview-header">
+            <button class="back-btn" onclick="closeWebview()">←</button>
+            <span class="webview-title" id="webviewTitle">加载中...</span>
+            <button class="refresh-btn" onclick="refreshWebview()">🔄</button>
+        </div>
+        <iframe id="webviewFrame" src=""></iframe>
+    </div>
+    
+    <script>
+        // Blog Configuration - 修改这里！
+        const BLOG_CONFIG = {
+            name: '我的博客',
+            url: 'https://zjuzhfbloodz.github.io',  // ⚠️ 改成你的博客地址
+            description: '技术分享、生活感悟、学习笔记'
+        };
+        
+        // Sample Articles (可以替换为真实数据)
+        const articles = [
+            {
+                title: '🦄 欢迎来到我的博客',
+                excerpt: '这是一个用爱搭建的小站，记录我的技术探索和生活感悟...',
+                category: 'life',
+                date: '2024-01-15',
+                views: '1.2k',
+                url: 'https://zjuzhfbloodz.github.io'
+            },
+            {
+                title: '💻 MacBook Pro 配置指南',
+                excerpt: '从零开始配置开发环境，VSCode、Homebrew、iTerm2...',
+                category: 'tech',
+                date: '2024-01-10',
+                views: '856',
+                url: 'https://zjuzhfbloodz.github.io/posts/mac-setup'
+            },
+            {
+                title: '📚 2024 年阅读清单',
+                excerpt: '今年读完的 24 本书，推荐给你...',
+                category: 'note',
+                date: '2024-01-05',
+                views: '432',
+                url: 'https://zjuzhfbloodz.github.io/posts/reading-2024'
+            },
+            {
+                title: '🌸 第一次徒步经验分享',
+                excerpt: '武功山两天一夜徒步，累并快乐着...',
+                category: 'life',
+                date: '2024-01-01',
+                views: '234',
+                url: 'https://zjuzhfbloodz.github.io/posts/hiking'
+            }
+        ];
+        
+        let deferredInstallPrompt = null;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initPWA();
+            renderArticles();
+            updateTitle();
+        });
+        
+        // Update Title
+        function updateTitle() {
+            document.querySelector('.header h1').textContent = BLOG_CONFIG.name;
+            document.title = BLOG_CONFIG.name;
+            document.querySelector('.header p').textContent = BLOG_CONFIG.description;
+        }
+        
+        // Render Articles
+        function renderArticles(category = 'all') {
+            const container = document.getElementById('articles');
+            let filtered = articles;
+            
+            if (category !== 'all') {
+                filtered = articles.filter(a => a.category === category);
+            }
+            
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="loading">暂无文章</div>';
+                return;
+            }
+            
+            container.innerHTML = filtered.map(article => `
+                <div class="article-card" onclick="openArticle('${article.url}', '${article.title}')">
+                    <div class="article-title">${article.title}</div>
+                    <div class="article-excerpt">${article.excerpt}</div>
+                    <div class="article-meta">
+                        <span>📅 ${article.date}</span>
+                        <span>👁️ ${article.views}</span>
+                        <span>🏷️ ${getCategoryName(article.category)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function getCategoryName(cat) {
+            const names = {
+                'tech': '💻 技术',
+                'life': '🌸 生活',
+                'note': '📝 笔记',
+                'other': '📌 其他'
+            };
+            return names[cat] || cat;
+        }
+        
+        function filterCategory(category) {
+            document.querySelectorAll('.category').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            renderArticles(category);
+        }
+        
+        // Search
+        function search() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (query) {
+                openArticle(`${BLOG_CONFIG.url}/search?q=${encodeURIComponent(query)}`, '搜索结果');
+            }
+        }
+        
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') search();
+        });
+        
+        // Open Article
+        function openArticle(url, title) {
+            document.getElementById('webviewFrame').src = url;
+            document.getElementById('webviewTitle').textContent = title;
+            document.getElementById('webviewContainer').classList.add('active');
+        }
+        
+        function closeWebview() {
+            document.getElementById('webviewContainer').classList.remove('active');
+            document.getElementById('webviewFrame').src = '';
+        }
+        
+        function refreshWebview() {
+            document.getElementById('webviewFrame').src = document.getElementById('webviewFrame').src;
+        }
+        
+        // Bottom Nav
+        function showHome() {
+            setActiveNav(0);
+            renderArticles();
+        }
+        
+        function showCategories() {
+            setActiveNav(1);
+            document.getElementById('articles').innerHTML = '<div class="loading">分类功能开发中...</div>';
+        }
+        
+        function showBookmarks() {
+            setActiveNav(2);
+            document.getElementById('articles').innerHTML = '<div class="loading">收藏功能开发中...</div>';
+        }
+        
+        function showSettings() {
+            setActiveNav(3);
+            document.getElementById('articles').innerHTML = `
+                <div class="article-card">
+                    <div class="article-title">⚙️ 设置</div>
+                    <div class="article-excerpt">
+                        <p>🌐 博客地址: ${BLOG_CONFIG.url}</p>
+                        <p>📱 版本: 1.0.0</p>
+                        <p>🆕 检查更新</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function setActiveNav(index) {
+            document.querySelectorAll('.nav-item').forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
+        }
+        
+        // PWA Functions
+        function initPWA() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js').then(reg => {
+                    console.log('Service Worker registered!');
+                });
+            }
+            
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredInstallPrompt = e;
+                document.getElementById('installPrompt').classList.add('show');
+            });
+        }
+        
+        function installPWA() {
+            if (deferredInstallPrompt) {
+                deferredInstallPrompt.prompt();
+                deferredInstallPrompt.userChoice.then(choiceResult => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    }
+                    deferredInstallPrompt = null;
+                    document.getElementById('installPrompt').classList.remove('show');
+                });
+            }
+        }
+        
+        function closeInstallPrompt() {
+            document.getElementById('installPrompt').classList.remove('show');
+        }
+    </script>
+</body>
+</html>
